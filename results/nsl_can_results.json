@@ -1,0 +1,220 @@
+{
+  "dataset_source": "nsl",
+  "exclude_meta_frames": true,
+  "train_tabular_rows": 120000,
+  "test_tabular_rows": 22544,
+  "train_can_frames": 840000,
+  "test_can_frames": 157808,
+  "n_features": 14,
+  "train_time_s": 0.7234,
+  "tree_depth": 5,
+  "n_leaves": 32,
+  "model_size_kb": 6.021,
+  "inference_time_ms": 0.029015,
+  "overall": {
+    "accuracy": 0.6857,
+    "precision": 0.8923,
+    "recall": 0.5095,
+    "f1": 0.6486,
+    "fpr": 0.0813,
+    "roc_auc": 0.7528,
+    "tn": 53530,
+    "fp": 4736,
+    "fn": 37771,
+    "tp": 39227
+  },
+  "per_attack_type": {
+    "apache2": {
+      "recall": 0.5009,
+      "fpr": 0.0813,
+      "n_samples": 4422
+    },
+    "back": {
+      "recall": 0.1054,
+      "fpr": 0.0813,
+      "n_samples": 2154
+    },
+    "buffer_overflow": {
+      "recall": 0.075,
+      "fpr": 0.0813,
+      "n_samples": 120
+    },
+    "ftp_write": {
+      "recall": 0.0556,
+      "fpr": 0.0813,
+      "n_samples": 18
+    },
+    "guess_passwd": {
+      "recall": 0.0843,
+      "fpr": 0.0813,
+      "n_samples": 7386
+    },
+    "httptunnel": {
+      "recall": 0.4875,
+      "fpr": 0.0813,
+      "n_samples": 798
+    },
+    "imap": {
+      "recall": 0.5,
+      "fpr": 0.0813,
+      "n_samples": 6
+    },
+    "ipsweep": {
+      "recall": 0.4444,
+      "fpr": 0.0813,
+      "n_samples": 846
+    },
+    "land": {
+      "recall": 0.3571,
+      "fpr": 0.0813,
+      "n_samples": 42
+    },
+    "loadmodule": {
+      "recall": 0.0833,
+      "fpr": 0.0813,
+      "n_samples": 12
+    },
+    "mailbomb": {
+      "recall": 0.0108,
+      "fpr": 0.0813,
+      "n_samples": 1758
+    },
+    "mscan": {
+      "recall": 0.4521,
+      "fpr": 0.0813,
+      "n_samples": 5976
+    },
+    "multihop": {
+      "recall": 0.1296,
+      "fpr": 0.0813,
+      "n_samples": 108
+    },
+    "named": {
+      "recall": 0.2157,
+      "fpr": 0.0813,
+      "n_samples": 102
+    },
+    "neptune": {
+      "recall": 0.8546,
+      "fpr": 0.0813,
+      "n_samples": 27942
+    },
+    "nmap": {
+      "recall": 0.3653,
+      "fpr": 0.0813,
+      "n_samples": 438
+    },
+    "perl": {
+      "recall": 0.25,
+      "fpr": 0.0813,
+      "n_samples": 12
+    },
+    "phf": {
+      "recall": 0.25,
+      "fpr": 0.0813,
+      "n_samples": 12
+    },
+    "pod": {
+      "recall": 0.3333,
+      "fpr": 0.0813,
+      "n_samples": 246
+    },
+    "portsweep": {
+      "recall": 0.6688,
+      "fpr": 0.0813,
+      "n_samples": 942
+    },
+    "processtable": {
+      "recall": 0.2477,
+      "fpr": 0.0813,
+      "n_samples": 4110
+    },
+    "ps": {
+      "recall": 0.1,
+      "fpr": 0.0813,
+      "n_samples": 90
+    },
+    "rootkit": {
+      "recall": 0.0897,
+      "fpr": 0.0813,
+      "n_samples": 78
+    },
+    "saint": {
+      "recall": 0.7147,
+      "fpr": 0.0813,
+      "n_samples": 1914
+    },
+    "satan": {
+      "recall": 0.6098,
+      "fpr": 0.0813,
+      "n_samples": 4410
+    },
+    "sendmail": {
+      "recall": 0.131,
+      "fpr": 0.0813,
+      "n_samples": 84
+    },
+    "smurf": {
+      "recall": 0.4213,
+      "fpr": 0.0813,
+      "n_samples": 3990
+    },
+    "snmpgetattack": {
+      "recall": 0.1835,
+      "fpr": 0.0813,
+      "n_samples": 1068
+    },
+    "snmpguess": {
+      "recall": 0.1757,
+      "fpr": 0.0813,
+      "n_samples": 1986
+    },
+    "sqlattack": {
+      "recall": 0.1667,
+      "fpr": 0.0813,
+      "n_samples": 12
+    },
+    "teardrop": {
+      "recall": 0.3472,
+      "fpr": 0.0813,
+      "n_samples": 72
+    },
+    "udpstorm": {
+      "recall": 0.1667,
+      "fpr": 0.0813,
+      "n_samples": 12
+    },
+    "warezmaster": {
+      "recall": 0.0839,
+      "fpr": 0.0813,
+      "n_samples": 5664
+    },
+    "worm": {
+      "recall": 0.0,
+      "fpr": 0.0813,
+      "n_samples": 12
+    },
+    "xlock": {
+      "recall": 0.1481,
+      "fpr": 0.0813,
+      "n_samples": 54
+    },
+    "xsnoop": {
+      "recall": 0.1667,
+      "fpr": 0.0813,
+      "n_samples": 24
+    },
+    "xterm": {
+      "recall": 0.1154,
+      "fpr": 0.0813,
+      "n_samples": 78
+    }
+  },
+  "artifacts": {
+    "train_can_csv": "/Users/loganluna/VSCode/energy-efficient-embedded-cybersecurity-for-satellite-avionics/datasets/CAN_FROM_BENCHMARK/nsl_can_train.csv",
+    "test_can_csv": "/Users/loganluna/VSCode/energy-efficient-embedded-cybersecurity-for-satellite-avionics/datasets/CAN_FROM_BENCHMARK/nsl_can_test.csv",
+    "encoding_meta": "/Users/loganluna/VSCode/energy-efficient-embedded-cybersecurity-for-satellite-avionics/datasets/CAN_FROM_BENCHMARK/nsl_can_encoding_meta.json",
+    "model": "/Users/loganluna/VSCode/energy-efficient-embedded-cybersecurity-for-satellite-avionics/models/trained_models/nsl_can/tree.joblib",
+    "scaler": "/Users/loganluna/VSCode/energy-efficient-embedded-cybersecurity-for-satellite-avionics/models/trained_models/nsl_can/scaler.joblib"
+  }
+}
