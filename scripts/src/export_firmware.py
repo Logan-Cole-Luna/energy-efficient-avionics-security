@@ -10,7 +10,7 @@ Supports three precision levels:
   - INT16    (thresholds quantized to 16-bit integers)
   - INT8     (thresholds quantized to 8-bit integers)
 
-When run as a script, evaluates the UNSW network model (models/trained_models/unsw/)
+When run as a script, evaluates the NSL->CAN model (models/trained_models/nsl_can/)
 at all three precision levels and regenerates its C headers.
 """
 
@@ -329,45 +329,33 @@ def evaluate(qtree, X_test, y_test, n_timing=500):
 # ─────────────────────────────────────────────────────────────────────────────
 
 def load_test_data():
-    """Reload UNSW-NB15 test set using the saved scaler."""
-    train_df = pd.read_parquet(DATASET_DIR / 'UNSW_NB15_training-set.parquet')
-    test_df  = pd.read_parquet(DATASET_DIR / 'UNSW_NB15_testing-set.parquet')
+    """Reload NSL->CAN feature train/test sets using the saved scaler."""
+    train_df = pd.read_csv(DATASET_DIR / 'CAN_FROM_BENCHMARK' / 'nsl_can_train_features.csv')
+    test_df = pd.read_csv(DATASET_DIR / 'CAN_FROM_BENCHMARK' / 'nsl_can_test_features.csv')
 
-    combined  = pd.concat([train_df, test_df], ignore_index=True)
-    split_idx = len(train_df)
+    # Features list is persisted with the trained model for strict alignment.
+    with open(MODELS_DIR / 'nsl_can' / 'features.json') as f:
+        feature_names = json.load(f)
 
-    label_col = 'label' if 'label' in combined.columns else 'Attack'
-    y = combined[label_col].values.astype(int)
+    X_train = train_df[feature_names].values.astype(np.float32)
+    X_test = test_df[feature_names].values.astype(np.float32)
+    y_test = test_df['label'].values.astype(int)
 
-    X = combined.drop(columns=[label_col])
-    if 'attack_cat' in X.columns:
-        X = X.drop(columns=['attack_cat'])
-
-    for col in X.select_dtypes(include=['object']).columns:
-        le = LabelEncoder()
-        X[col] = le.fit_transform(X[col].astype(str))
-    for col in X.columns:
-        X[col] = pd.to_numeric(X[col], errors='coerce')
-    X = X.fillna(0).astype(np.float32)
-
-    scaler = joblib.load(MODELS_DIR / 'unsw' / 'scaler.joblib')
-    X_scaled = scaler.transform(X.values)
-
-    X_train = X_scaled[:split_idx]
-    X_test  = X_scaled[split_idx:]
-    y_test  = y[split_idx:]
+    scaler = joblib.load(MODELS_DIR / 'nsl_can' / 'scaler.joblib')
+    X_train = scaler.transform(X_train)
+    X_test = scaler.transform(X_test)
     return X_train, X_test, y_test
 
 
 def run_export():
     print("=" * 70)
-    print("Export Firmware — UNSW TinyDecisionTree Quantization")
+    print("Export Firmware — NSL->CAN TinyDecisionTree Quantization")
     print("=" * 70)
 
     # ── Load trained model + data ──────────────────────────────────────────
-    print("\n[1/4] Loading UNSW model + test data...")
-    sk_tree = joblib.load(MODELS_DIR / 'unsw' / 'tree.joblib')
-    with open(MODELS_DIR / 'unsw' / 'features.json') as f:
+    print("\n[1/4] Loading NSL->CAN model + test data...")
+    sk_tree = joblib.load(MODELS_DIR / 'nsl_can' / 'tree.joblib')
+    with open(MODELS_DIR / 'nsl_can' / 'features.json') as f:
         feature_names = json.load(f)
     X_train, X_test, y_test = load_test_data()
 
@@ -391,7 +379,7 @@ def run_export():
         print(f"→ {qt.size_bytes()} bytes ({qt.size_kb():.3f} KB)")
 
     # ── Evaluate all variants ──────────────────────────────────────────────
-    print("\n[3/4] Evaluating on UNSW-NB15 test set...")
+    print("\n[3/4] Evaluating on NSL->CAN test set...")
 
     all_results = {}
     for name, qt in variants.items():
@@ -424,15 +412,15 @@ def run_export():
 
     # ── Generate C headers for all variants ───────────────────────────────
     print("\n[4/4] Generating STM32 C headers...")
-    generate_c_header(variants['float32'], feature_names, MODELS_DIR / 'unsw' / 'float32.h')
-    generate_c_header(variants['int16'],   feature_names, MODELS_DIR / 'unsw' / 'int16.h')
-    generate_c_header(variants['int8'],    feature_names, MODELS_DIR / 'unsw' / 'int8.h')
+    generate_c_header(variants['float32'], feature_names, MODELS_DIR / 'nsl_can' / 'float32.h')
+    generate_c_header(variants['int16'],   feature_names, MODELS_DIR / 'nsl_can' / 'int16.h')
+    generate_c_header(variants['int8'],    feature_names, MODELS_DIR / 'nsl_can' / 'int8.h')
 
     # ── Save results ───────────────────────────────────────────────────────
     results = {
         'phase': 3,
         'model': 'TinyDecisionTree',
-        'dataset': 'UNSW-NB15',
+        'dataset': 'NSL->CAN',
         'n_nodes': int(sk_tree.tree_.node_count),
         'tree_depth': int(sk_tree.get_depth()),
         'n_leaves': int(sk_tree.get_n_leaves()),
@@ -446,7 +434,7 @@ def run_export():
     print(f"  Saved results → results/quantization_results.json")
 
     print("\n" + "=" * 70)
-    print("DONE — UNSW firmware headers exported")
+    print("DONE — NSL->CAN firmware headers exported")
     print("=" * 70)
     return results
 

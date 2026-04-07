@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Convert UNSW-NB15 or NSL-KDD tabular IDS datasets into CAN-frame streams.
+Convert NSL-KDD tabular IDS data into CAN-frame streams.
 
 Output schema (compatible with CAN pipeline):
   timestamp, can_id, dlc, d0..d7, label, attack_type
@@ -29,11 +29,6 @@ DATASETS_DIR = ROOT / 'datasets'
 
 # Dataset-specific CAN ID ranges
 CAN_LAYOUT = {
-    'unsw': {
-        'meta_id': 0x100,
-        'feature_base_id': 0x200,
-        'dataset_code': 1,
-    },
     'nsl': {
         'meta_id': 0x180,
         'feature_base_id': 0x300,
@@ -53,43 +48,6 @@ def _encode_categoricals(train_df: pd.DataFrame, test_df: pd.DataFrame) -> Tuple
 
     combined = combined.apply(pd.to_numeric, errors='coerce').fillna(0)
     return combined.iloc[:n_train].copy(), combined.iloc[n_train:].copy()
-
-
-def load_unsw() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, list[str], np.ndarray, np.ndarray]:
-    train_df = pd.read_parquet(DATASETS_DIR / 'UNSW_NB15_training-set.parquet')
-    test_df = pd.read_parquet(DATASETS_DIR / 'UNSW_NB15_testing-set.parquet')
-
-    label_col = 'label' if 'label' in train_df.columns else 'Attack'
-    attack_col = 'attack_cat' if 'attack_cat' in train_df.columns else None
-
-    y_train = train_df[label_col].astype(int).values
-    y_test = test_df[label_col].astype(int).values
-
-    if attack_col is not None:
-        attack_train = np.where(y_train == 0, 'normal', train_df[attack_col].astype(str).values)
-        attack_test = np.where(y_test == 0, 'normal', test_df[attack_col].astype(str).values)
-    else:
-        attack_train = np.where(y_train == 0, 'normal', 'attack')
-        attack_test = np.where(y_test == 0, 'normal', 'attack')
-
-    drop_cols = [label_col]
-    if attack_col is not None:
-        drop_cols.append(attack_col)
-
-    X_train_df = train_df.drop(columns=drop_cols)
-    X_test_df = test_df.drop(columns=drop_cols)
-    X_train_df, X_test_df = _encode_categoricals(X_train_df, X_test_df)
-
-    feature_names = X_train_df.columns.tolist()
-    return (
-        X_train_df.values.astype(np.float32),
-        X_test_df.values.astype(np.float32),
-        y_train,
-        y_test,
-        feature_names,
-        attack_train,
-        attack_test,
-    )
 
 
 def load_nsl() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, list[str], np.ndarray, np.ndarray]:
@@ -238,12 +196,9 @@ def tabular_to_can_frames(
 def build_benchmark_can_dataset(dataset: str, out_dir: Path, max_train_rows: int = 120000, max_test_rows: int = 50000) -> dict:
     rng = np.random.default_rng(42)
 
-    if dataset == 'unsw':
-        X_train, X_test, y_train, y_test, feature_names, a_train, a_test = load_unsw()
-    elif dataset == 'nsl':
-        X_train, X_test, y_train, y_test, feature_names, a_train, a_test = load_nsl()
-    else:
+    if dataset != 'nsl':
         raise ValueError(f'Unsupported dataset: {dataset}')
+    X_train, X_test, y_train, y_test, feature_names, a_train, a_test = load_nsl()
 
     X_train, y_train, a_train = _sample_rows(X_train, y_train, a_train, max_train_rows, rng)
     X_test, y_test, a_test = _sample_rows(X_test, y_test, a_test, max_test_rows, rng)
@@ -289,8 +244,8 @@ def build_benchmark_can_dataset(dataset: str, out_dir: Path, max_train_rows: int
 
 
 def main():
-    ap = argparse.ArgumentParser(description='Convert UNSW or NSL tabular IDS data into CAN frame datasets')
-    ap.add_argument('--dataset', choices=['unsw', 'nsl'], required=True)
+    ap = argparse.ArgumentParser(description='Convert NSL-KDD tabular IDS data into CAN frame datasets')
+    ap.add_argument('--dataset', choices=['nsl'], default='nsl')
     ap.add_argument('--out-dir', default=str(ROOT / 'datasets' / 'CAN_FROM_BENCHMARK'))
     ap.add_argument('--max-train-rows', type=int, default=120000)
     ap.add_argument('--max-test-rows', type=int, default=50000)
@@ -304,7 +259,7 @@ def main():
     )
 
     print('=' * 72)
-    print(f"Converted {args.dataset.upper()} to CAN stream format")
+    print('Converted NSL-KDD to CAN stream format')
     print('=' * 72)
     print(f"Tabular rows  : train={info['train_rows']:,} test={info['test_rows']:,}")
     print(f"CAN frames    : train={info['train_frames']:,} test={info['test_frames']:,}")

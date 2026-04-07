@@ -48,7 +48,7 @@ def build_header_lines(names, mean, scale):
 
 def main():
     ap = argparse.ArgumentParser(description='Generate scaler header from joblib scaler')
-    ap.add_argument('--dataset', choices=['unsw', 'nsl'], default='unsw')
+    ap.add_argument('--dataset', choices=['nsl'], default='nsl')
     ap.add_argument('--scaler')
     ap.add_argument('--features')
     ap.add_argument('--out')

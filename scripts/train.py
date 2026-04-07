@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 """
-train.py — Train CAN IDS from UNSW-NB15 or NSL-KDD encoded as CAN frames.
+train.py — Train CAN IDS from NSL-KDD encoded as CAN frames.
 
 Flow:
-  1) Convert UNSW or NSL tabular train/test to CAN frame CSVs
+    1) Convert NSL-KDD tabular train/test to CAN frame CSVs
   2) Extract CAN sliding-window features (14 features)
   3) Train TinyDecisionTree (depth 5)
   4) Evaluate and export STM32 C headers + scaler header
 
 Usage:
     python scripts/train.py
-    python scripts/train.py --dataset unsw
     python scripts/train.py --dataset nsl
 """
 
@@ -226,12 +225,12 @@ def run(dataset: str, max_train_rows: int, max_test_rows: int, exclude_meta_fram
 
 
 def main():
-    ap = argparse.ArgumentParser(description='Train CAN IDS from UNSW/NSL converted CAN frames')
+    ap = argparse.ArgumentParser(description='Train CAN IDS from NSL-KDD converted CAN frames')
     ap.add_argument(
         '--dataset',
-        choices=['unsw', 'nsl', 'both'],
-        default='both',
-        help='Dataset to train on (default: both)'
+        choices=['nsl'],
+        default='nsl',
+        help='Dataset to train on (default: nsl)'
     )
     ap.add_argument('--max-train-rows', type=int, default=120000)
     ap.add_argument('--max-test-rows', type=int, default=50000)
@@ -241,14 +240,12 @@ def main():
         help='Include meta CAN frames in feature extraction (default: excluded)',
     )
     args = ap.parse_args()
-    datasets = ['unsw', 'nsl'] if args.dataset == 'both' else [args.dataset]
-    for dataset in datasets:
-        run(
-            dataset=dataset,
-            max_train_rows=args.max_train_rows,
-            max_test_rows=args.max_test_rows,
-            exclude_meta_frames=not args.include_meta_frames,
-        )
+    run(
+        dataset=args.dataset,
+        max_train_rows=args.max_train_rows,
+        max_test_rows=args.max_test_rows,
+        exclude_meta_frames=not args.include_meta_frames,
+    )
 
 
 if __name__ == '__main__':

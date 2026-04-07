@@ -6,11 +6,11 @@
   "train_can_frames": 840000,
   "test_can_frames": 157808,
   "n_features": 14,
-  "train_time_s": 0.7234,
+  "train_time_s": 0.7342,
   "tree_depth": 5,
   "n_leaves": 32,
   "model_size_kb": 6.021,
-  "inference_time_ms": 0.029015,
+  "inference_time_ms": 0.030492,
   "overall": {
     "accuracy": 0.6857,
     "precision": 0.8923,
