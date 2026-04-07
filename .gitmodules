@@ -1,0 +1,18 @@
+[submodule "EmbeddedBabel/firmware/zubax_chibios"]
+	path = EmbeddedBabel/firmware/zubax_chibios
+	url = https://github.com/Zubax/zubax_chibios
+[submodule "EmbeddedBabel/bootloader/zubax_chibios"]
+	path = EmbeddedBabel/bootloader/zubax_chibios
+	url = https://github.com/Zubax/zubax_chibios
+[submodule "EmbeddedBabel/tools/drwatson/drwatson"]
+	path = EmbeddedBabel/tools/drwatson/drwatson
+	url = https://github.com/Zubax/drwatson
+[submodule "EmbeddedBabel/tools/drwatson/pyuavcan"]
+	path = EmbeddedBabel/tools/drwatson/pyuavcan
+	url = https://github.com/UAVCAN/pyuavcan
+[submodule "EmbeddedBabel/datasheet/document_templates"]
+	path = EmbeddedBabel/datasheet/document_templates
+	url = https://github.com/Zubax/document_templates
+[submodule "EmbeddedBabel/docs/datasheet/document_templates"]
+	path = EmbeddedBabel/docs/datasheet/document_templates
+	url = https://github.com/Zubax/document_templates

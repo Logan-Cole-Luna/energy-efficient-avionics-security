@@ -48,8 +48,23 @@ Network benchmark datasets encoded as synthetic CAN streams, then evaluated on S
 ## Repository Structure
 
 ```
-intrusion_detection/
-├── scripts/
+├── EmbeddedBabel/                  # Zubax Babel USB-CAN adapter firmware (STM32F373)
+│   ├── firmware/                   # Main application firmware
+│   │   ├── src/                    # Application source code
+│   │   │   ├── ids_inference.*     # IDS inference engine
+│   │   │   ├── ids_model.h         # Exported decision tree model
+│   │   │   ├── ids_scaler.h        # Feature normalization constants
+│   │   │   └── main.cpp            # Application entry point
+│   │   ├── zubax_chibios/          # ChibiOS RTOS submodule
+│   │   └── Makefile                # Build configuration
+│   ├── bootloader/                 # USB/UART bootloader
+│   │   ├── src/                    # Bootloader source
+│   │   └── zubax_chibios/          # ChibiOS RTOS submodule
+│   ├── docs/                       # Hardware documentation & datasheets
+│   ├── hardware/                   # Enclosure STL files
+│   └── tools/                      # DrWatson production testing tools
+│
+├── scripts/                        # Python ML/IDS pipeline scripts
 │   ├── src/                        # Shared utilities (imported by pipeline scripts)
 │   │   ├── features.py             # 14-feature CAN extractor + FEATURE_NAMES
 │   │   ├── encode_to_can.py        # UNSW/NSL tabular → CAN frame stream encoder
@@ -59,6 +74,7 @@ intrusion_detection/
 │   ├── generate_plots.py           # All paper figures
 │   ├── run_benchmark.py            # STM32 UART hardware benchmark driver
 │   └── export_scaler.py            # Export scaler constants as C header
+│
 ├── models/
 │   ├── lightweight_ids_models.py   # Model definitions
 │   └── trained_models/
@@ -81,7 +97,9 @@ intrusion_detection/
 │       └── nsl_can/                # NSL encoded as CAN frames
 │           ├── tree.joblib, scaler.joblib, features.json
 │           ├── float32.h, int16.h, scaler.h
-├── firmware/                       # STM32 C source + exported model headers
+│
+├── firmware/                       # Exported STM32 model headers (copied from models/)
+│
 ├── datasets/
 │   ├── UNSW_NB15_training-set.parquet
 │   ├── UNSW_NB15_testing-set.parquet
@@ -89,6 +107,7 @@ intrusion_detection/
 │   │   ├── KDDTrain+.txt
 │   │   └── KDDTest+.txt
 │   └── CAN_FROM_BENCHMARK/         # Encoded CAN frame CSVs (auto-generated)
+│
 └── results/
     ├── model_comparison.json
     ├── model_selection_unsw.json
@@ -301,14 +320,62 @@ FPR      : 0.9068
 ROC-AUC  : 0.9301
 ```
 
-### Step 3: Compile & Flash STM32 Firmware
+### Step 3: Build & Flash STM32 Firmware (Zubax Babel)
+
+The IDS runs on [Zubax Babel](https://zubax.com/products/babel) hardware—a USB-CAN adapter based on STM32F373.
+
+**Prerequisites:**
+- ARM GCC toolchain (see `EmbeddedBabel/firmware/src/main.cpp` for required version)
+- Initialize submodules: `git submodule update --init --recursive`
+
+**Building the firmware:**
 
 ```bash
-cd firmware/
-make clean
-make BOARD=stm32f373c8t
-st-flash write build/firmware.bin 0x08000000
+cd EmbeddedBabel/firmware
+make -j8 RELEASE=1   # Omit RELEASE=1 for debug build
 ```
+
+Build outputs in `EmbeddedBabel/firmware/build/`:
+- `com.zubax.*.application.bin` — Application binary for bootloader upload
+- `com.zubax.*.compound.bin` — Combined bootloader + application for empty MCU
+- `compound.elf` — Debug symbols for SWD debugging
+
+**Flashing via SWD/JTAG (recommended):**
+
+Use a [Zubax Dronecode Probe](https://kb.zubax.com/x/iIAh) or any SWD debugger:
+
+```bash
+cd EmbeddedBabel/firmware
+./zubax_chibios/tools/blackmagic_flash.sh
+```
+
+Or with `st-flash`:
+
+```bash
+st-flash write build/com.zubax.babel.compound.bin 0x08000000
+```
+
+**Flashing via USB/UART Bootloader:**
+
+1. Connect to the device CLI (USB virtual serial port or UART at 115200-8N1)
+2. Execute `bootloader` command to enter bootloader mode
+3. Execute `download` to start XMODEM receiver
+4. Transmit the application binary:
+
+```bash
+sz -vv --xmodem --1k EmbeddedBabel/firmware/build/com.zubax.babel.application.bin > /dev/ttyACM0 < /dev/ttyACM0
+```
+
+Or use the automated script:
+
+```bash
+cd EmbeddedBabel/firmware
+./zubax_chibios/tools/flash_via_serial_bootloader.sh
+```
+
+**Verify installation:**
+
+Connect via serial and run `zubax_id` — if in application mode, IDS is ready.
 
 ### Step 4: Hardware Validation
 
